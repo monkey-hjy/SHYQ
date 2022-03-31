@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="chrome=1">
+		<meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+		<title>CircleMarker</title>
+		<style type="text/css">
+			html,
+			body,
+			#map {
+				width: 100%;
+				height: 100%;
+				margin: 0;
+			}
+
+			ul,
+			li {
+				list-style: none;
+				margin: 0;
+				padding: 0;
+			}
+
+			#select {
+				z-index: 999;
+				width: auto;
+				height: auto;
+				position: absolute;
+				top: 0;
+				left: 0;
+				background-color: aquamarine;
+				padding: 10px;
+			}
+
+			li {
+				cursor: pointer;
+			}
+		</style>
+		<script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js">
+		</script>
+		<script type="text/javascript" src='https://webapi.amap.com/maps?v=2.0&key=6ee984ff1077aebf1b2dd8548273b03d'>
+		</script>
+
+	</head>
+	<body>
+		<div id="map"></div>
+		<div id="select">
+			<ul id="ul">
+			</ul>
+		</div>
+		<script>
+			window.onload=function(){
+			var ul = document.getElementById('ul')
+			var liList = []
+			var dataList = []
+
+			var map = new AMap.Map('map', {
+				viewMode: '3D',
+				zoom: 10.2,
+				center: [121.507761, 31.234339]
+			})
+			var data = []
+            var all_date = []
+			$.ajax({
+				url: "http://127.0.0.1:8090/getDate",
+				type: 'get',
+				dataType: "json",
+				success: function(data) {
+					for (let i = 0; i < data.res.length; i++) {
+						//var tem = `<li><label><input type="checkbox" id='input' value=${data.res[i]} />${data.res[i]}</label></li>`
+						var tem = `<p>${data.res[i]}</p>`
+						liList.push(tem)
+                        all_date.push(data.res[i])
+					}
+					//ul.innerHTML = liList.join('')
+                    for (let i = all_date.length - 1; i >= 0 ; i--){
+                        setTimeout(function (){
+                           $.ajax({
+                                url: "http://127.0.0.1:8090/getData",
+                                type: 'post',
+                                contentType: "application/json", //必须这样写
+                                dataType: "json",
+                                data:JSON.stringify([all_date[i]]) ,
+                                success: function(data) {
+                                    ul.innerHTML = liList[i] + '<br>' + data.res.length + '个地点'
+                                    map.clearMap();
+                                    data = data.res
+                                    console.log(data.length)
+                                    console.log([all_date[i]])
+                                    for (let i = 0; i < data.length; i += 1) {
+                                        var center = data[i];
+                                        var circleMarker = new AMap.CircleMarker({
+                                            center: center,
+                                            radius: 5, //3D视图下，CircleMarker半径不要超过64px
+                                            strokeColor: 'white',
+                                            strokeWeight: 2,
+                                            strokeOpacity: 0.5,
+                                            fillColor: 'rgba(255,0,0)',
+                                            fillOpacity: 0.5,
+                                            zIndex: 10,
+                                            bubble: true,
+                                            cursor: 'pointer',
+                                            clickable: true
+                                        })
+                                        circleMarker.setMap(map)
+                                    }
+                                }
+                            })
+                       }, (all_date.length - i) * 3000)
+                    }
+				}
+			})
+            console.log(all_date)
+
+
+			}
+		</script>
+	</body>
+</html>
