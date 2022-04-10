@@ -24,9 +24,11 @@ def index():
 def get_date():
     now_date = datetime.datetime.now()
     res = list()
-    for i in range(1, 12):
+    for i in range(1, 15):
         d = now_date - datetime.timedelta(days=i)
         d = ''.join(str(d.date()).split('-'))
+        if d == '20220402':
+            continue
         res.append(d)
     return {'success': True, 'res': res}
 
